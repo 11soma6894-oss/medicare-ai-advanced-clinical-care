@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --color-brand-blue: #E0F2FE;
+  --color-primary-blue: #2563EB;
+}
+
+@keyframes infinite-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-infinite-scroll {
+  animation: infinite-scroll 40s linear infinite;
+}
+
+@layer base {
+  body {
+    @apply font-sans bg-brand-blue text-black antialiased;
+  }
+}
+
+.glass-panel {
+  @apply bg-white/50 backdrop-blur-md border border-white/20 shadow-sm;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-blue-200 rounded-full border-2 border-brand-blue;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-blue-300;
+}
+
+/* Markdown Content Styles */
+.markdown-content p {
+  @apply mb-4 leading-relaxed;
+}
+.markdown-content p:last-child {
+  @apply mb-0;
+}
+.markdown-content ul, .markdown-content ol {
+  @apply mb-6 pl-10;
+}
+.markdown-content ul {
+  @apply list-disc;
+}
+.markdown-content ol {
+  @apply list-decimal;
+}
+.markdown-content li {
+  @apply mb-3;
+}
+.markdown-content strong, .markdown-content b {
+  @apply font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100;
+}
+.markdown-content em {
+  @apply italic;
+}
+.markdown-content em:only-child, .markdown-content p em:only-child {
+  @apply block bg-blue-50/50 border-l-4 border-blue-400 py-3 px-5 text-sm text-blue-600 rounded-r-2xl font-medium not-italic;
+}
+.markdown-content.text-white em:only-child {
+  @apply bg-white/10 border-white/40 text-blue-100;
+}
+.markdown-content.text-white strong, .markdown-content.text-white b {
+  @apply text-white/90 bg-white/10 border-white/20;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-report, #printable-report * {
+    visibility: visible;
+  }
+  #printable-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    background: white !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

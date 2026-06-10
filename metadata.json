@@ -1,0 +1,6 @@
+{
+  "name": "Medicare AI: Advanced AI Clinical Care",
+  "description": "Professional AI-driven healthcare platform for seamless doctor consultations with real-time diagnostics and world-class medical expertise.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

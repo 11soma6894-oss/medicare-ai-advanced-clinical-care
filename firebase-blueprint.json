@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Stores user account information and medical basics.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "phone": { "type": "string" },
+        "bloodType": { "type": "string" },
+        "weight": { "type": "string" },
+        "height": { "type": "string" },
+        "role": { "type": "string", "enum": ["patient", "doctor", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "lastLogin": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "MedicalRecord": {
+      "title": "Medical Record",
+      "description": "Stores a medical event or condition.",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "name": { "type": "string" },
+        "severity": { "type": "string", "enum": ["Low", "Moderate", "High"] },
+        "date": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "type", "userId"]
+    },
+    "Payment": {
+      "title": "Payment Record",
+      "description": "Stores transaction details.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "completed", "failed"] },
+        "plan": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "amount", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents"
+    },
+    "/users/{userId}/medicalRecords/{recordId}": {
+      "schema": "MedicalRecord",
+      "description": "Subcollection of medical records for a user"
+    },
+    "/payments/{paymentId}": {
+      "schema": "Payment",
+      "description": "Global collection of all payments"
+    }
+  }
+}
