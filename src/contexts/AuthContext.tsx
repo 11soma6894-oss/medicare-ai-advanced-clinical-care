@@ -72,7 +72,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email: u.email,
             photoURL: u.photoURL,
             lastLogin: serverTimestamp(),
-            role: isSystemAdmin ? 'admin' : 'patient'
+            role: isSystemAdmin ? 'admin' : 'patient',
+            websiteName: 'Medicare AI'
           }, { merge: true }).catch(e => handleFirestoreError(e, OperationType.WRITE, `users/${u.uid}`));
         }
       })
@@ -196,7 +197,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: user.email,
         photoURL: user.photoURL,
         lastLogin: serverTimestamp(),
-        role: isSystemAdmin ? 'admin' : 'patient'
+        role: isSystemAdmin ? 'admin' : 'patient',
+        websiteName: 'Medicare AI'
       }, { merge: true }).catch(e => handleFirestoreError(e, OperationType.WRITE, `users/${user.uid}`));
     } catch (err) {
       handleAuthError(err);
@@ -216,7 +218,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         photoURL: null,
         createdAt: serverTimestamp(),
         lastLogin: serverTimestamp(),
-        role: isSystemAdmin ? 'admin' : 'patient' // default role
+        role: isSystemAdmin ? 'admin' : 'patient', // default role
+        websiteName: 'Medicare AI'
       }).catch(e => handleFirestoreError(e, OperationType.CREATE, `users/${user.uid}`));
     } catch (err) {
       handleAuthError(err);
@@ -230,7 +233,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const isSystemAdmin = email === '11neetusharma6894@gmail.com';
       // Update last login
       await updateDoc(userRef, {
-        lastLogin: serverTimestamp()
+        lastLogin: serverTimestamp(),
+        websiteName: 'Medicare AI'
       }).catch(async (e) => {
         // If document doesn't exist, create it with all fields
         if (e.code === 'not-found') {
@@ -240,7 +244,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email: user.email,
             photoURL: user.photoURL,
             lastLogin: serverTimestamp(),
-            role: isSystemAdmin ? 'admin' : 'patient'
+            role: isSystemAdmin ? 'admin' : 'patient',
+            websiteName: 'Medicare AI'
           });
         } else {
           handleFirestoreError(e, OperationType.UPDATE, `users/${user.uid}`);

@@ -14,6 +14,7 @@
         "weight": { "type": "string" },
         "height": { "type": "string" },
         "role": { "type": "string", "enum": ["patient", "doctor", "admin"] },
+        "websiteName": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" },
         "lastLogin": { "type": "string", "format": "date-time" }
       },
@@ -29,6 +30,7 @@
         "severity": { "type": "string", "enum": ["Low", "Moderate", "High"] },
         "date": { "type": "string" },
         "userId": { "type": "string" },
+        "websiteName": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "type", "userId"]
@@ -43,7 +45,8 @@
         "amount": { "type": "number" },
         "currency": { "type": "string" },
         "status": { "type": "string", "enum": ["pending", "completed", "failed"] },
-        "plan": { "type": "string" },
+        "planName": { "type": "string" },
+        "websiteName": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "amount", "status"]

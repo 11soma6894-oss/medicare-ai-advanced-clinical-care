@@ -22,7 +22,8 @@ service cloud.firestore {
     // User Profile Validation
     function isValidUser(data) {
       return (data.get('uid', '') is string) && 
-             (data.get('email', '') is string);
+             (data.get('email', '') is string) &&
+             (!data.keys().hasAny(['websiteName']) || data.get('websiteName', '') is string);
     }
 
     match /users/{userId} {
@@ -43,7 +44,8 @@ service cloud.firestore {
       // Must at least have userId matching the path, and basic strings
       return (data.get('userId', '') == userId) &&
              (data.get('doctorName', '') is string) &&
-             (data.get('symptoms', '') is string);
+             (data.get('symptoms', '') is string) &&
+             (!data.keys().hasAny(['websiteName']) || data.get('websiteName', '') is string);
     }
 
     match /users/{userId}/medicalRecords/{recordId} {
@@ -56,7 +58,9 @@ service cloud.firestore {
     // Payments Validation
     function isValidPayment(data) {
       return data.userId is string && 
-             data.status in ['pending', 'completed', 'failed'];
+             data.status in ['pending', 'completed', 'failed'] &&
+             (!data.keys().hasAny(['planName']) || data.planName is string) &&
+             (!data.keys().hasAny(['websiteName']) || data.websiteName is string);
     }
 
     match /payments/{paymentId} {

@@ -481,6 +481,7 @@ export function CommunicationPage() {
       if (auth.currentUser) {
         await setDoc(doc(db, 'users', auth.currentUser.uid, 'medicalRecords', record.id), {
           ...record,
+          websiteName: 'Medicare AI',
           timestamp: serverTimestamp(),
           createdAt: serverTimestamp()
         }).catch(e => handleFirestoreError(e, OperationType.WRITE, `users/${auth.currentUser?.uid}/medicalRecords/${record.id}`));
