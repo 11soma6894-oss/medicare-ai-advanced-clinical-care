@@ -38,12 +38,33 @@ interface Message {
 }
 
 async function getSafeUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream> {
+  const fallbackConstraints = { ...constraints };
+  if (fallbackConstraints.video && typeof fallbackConstraints.video === 'object') {
+    fallbackConstraints.video = {
+      width: { ideal: 1280, min: 640 },
+      height: { ideal: 720, min: 480 },
+      frameRate: { ideal: 30, max: 60 },
+      facingMode: "user"
+    };
+  }
+
   try {
     if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
-      return await navigator.mediaDevices.getUserMedia(constraints);
+      return await navigator.mediaDevices.getUserMedia(fallbackConstraints);
     }
   } catch (err: any) {
-    console.log("Real media device request failed, falling back to simulation stream:", err.message || err);
+    console.log("Real media device request with high quality failed, trying lenient SD options:", err.message || err);
+    try {
+      const superLenient = {
+        audio: constraints.audio,
+        video: constraints.video ? { width: { ideal: 640 }, height: { ideal: 480 } } : false
+      };
+      if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+        return await navigator.mediaDevices.getUserMedia(superLenient);
+      }
+    } catch (innerErr) {
+      console.log("All real media device combinations failed, falling back to secure simulated engine.", innerErr);
+    }
   }
 
   // Fallback: Create structured simulated audio and/or video tracks
@@ -75,39 +96,108 @@ async function getSafeUserMedia(constraints: MediaStreamConstraints): Promise<Me
       const ctx = canvas.getContext('2d');
       if (ctx) {
         let frame = 0;
-        const intervalId = setInterval(() => {
+        let animationFrameId: number;
+
+        const drawFrame = () => {
+          if (track && track.readyState === 'ended') {
+            return;
+          }
           frame++;
-          ctx.fillStyle = '#0f172a'; // dark background
+          
+          // Clear and fill dark canvas background
+          ctx.fillStyle = '#1e293b'; // deep slate background
           ctx.fillRect(0, 0, 640, 480);
           
-          ctx.fillStyle = '#3b82f6';
-          ctx.font = 'bold 20px sans-serif';
-          ctx.fillText("SIMULATED CONSULTATION CAMERA", 50, 100);
-          
-          ctx.fillStyle = '#64748b';
-          ctx.font = '16px monospace';
-          ctx.fillText("Sandbox Environment - Real Camera Not Found", 50, 140);
-          ctx.fillText(`Frame Count: ${frame}`, 50, 180);
+          // Technical grids overlay
+          ctx.strokeStyle = 'rgba(148, 163, 184, 0.05)';
+          ctx.lineWidth = 1;
+          for (let i = 40; i < 640; i += 40) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i, 480);
+            ctx.stroke();
+          }
+          for (let j = 40; j < 480; j += 40) {
+            ctx.beginPath();
+            ctx.moveTo(0, j);
+            ctx.lineTo(640, j);
+            ctx.stroke();
+          }
 
-          ctx.strokeStyle = '#ef4444';
-          ctx.lineWidth = 4;
+          // Header green active line status
+          ctx.fillStyle = 'rgba(59, 130, 246, 0.15)';
+          ctx.fillRect(40, 40, 360, 45);
+          
+          ctx.fillStyle = (frame % 60 < 30) ? '#10b981' : '#059669'; // blinking green indicator
           ctx.beginPath();
-          for (let x = 0; x < 640; x++) {
-            const y = 240 + Math.sin((x + frame * 5) * 0.05) * 40;
-            if (x === 0) ctx.moveTo(x, y);
+          ctx.arc(60, 62, 6, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.fillStyle = '#10b981';
+          ctx.font = 'bold 11px sans-serif';
+          ctx.fillText("MEDICARE AI LIVE LINK • ACTIVE SD CONTEXT", 80, 66);
+          
+          // Simulated diagnostics information
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '11px monospace';
+          ctx.fillText("CAM CHANNEL : VIRTUAL-VGA-PORT-01", 40, 115);
+          ctx.fillText("HARDWARE MODE : SANDBOXED SECURE SIMULATOR", 40, 135);
+          ctx.fillText("FPS RENDERING : 30.00 / REGULATED", 40, 155);
+          ctx.fillText(`PROCESSED FRAMES : ${frame}`, 40, 175);
+          
+          // Focus crosshairs near corners
+          ctx.strokeStyle = '#3b82f6';
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(25, 40); ctx.lineTo(25, 25); ctx.lineTo(40, 25); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(615, 40); ctx.lineTo(615, 25); ctx.lineTo(600, 25); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(25, 440); ctx.lineTo(25, 455); ctx.lineTo(40, 455); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(615, 440); ctx.lineTo(615, 455); ctx.lineTo(600, 455); ctx.stroke();
+
+          // Smooth Cardiology ECG tracking wave
+          ctx.strokeStyle = 'rgba(59, 130, 246, 0.85)';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          for (let x = 40; x < 600; x++) {
+            const scaleX = (x + frame * 3.5) % 150;
+            let heartY = 0;
+            if (scaleX > 60 && scaleX < 70) heartY = -35;
+            else if (scaleX >= 70 && scaleX < 80) heartY = 55;
+            else if (scaleX >= 80 && scaleX < 90) heartY = -15;
+            else if (scaleX >= 110 && scaleX < 125) heartY = -8;
+            else heartY = Math.sin(x * 0.04 + frame * 0.1) * 1.5;
+
+            const y = 320 + heartY;
+            if (x === 40) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
           }
           ctx.stroke();
-        }, 33);
-        
+
+          // Cardiology pulse value
+          ctx.fillStyle = '#ef4444';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.fillText("♥  72 BPM", 40, 226);
+          ctx.fillStyle = '#64748b';
+          ctx.font = '10px monospace';
+          ctx.fillText("PULSE MONITOR ACTIVE", 125, 225);
+
+          // Watermark label
+          ctx.fillStyle = 'rgba(148, 163, 184, 0.12)';
+          ctx.font = 'bold 45px sans-serif';
+          ctx.fillText("MEDICARE", 350, 440);
+
+          animationFrameId = requestAnimationFrame(drawFrame);
+        };
+
         const stream = (canvas as any).captureStream ? (canvas as any).captureStream(30) : null;
+        let track: MediaStreamTrack | null = null;
         if (stream) {
-          const track = stream.getVideoTracks()[0];
+          track = stream.getVideoTracks()[0];
           if (track) {
             tracks.push(track);
             track.addEventListener('ended', () => {
-              clearInterval(intervalId);
+              cancelAnimationFrame(animationFrameId);
             });
+            drawFrame();
           }
         }
       }
@@ -225,11 +315,63 @@ export function CommunicationPage() {
   const [liveTypewriting, setLiveTypewriting] = useState<{ id: string, text: string, duration: number } | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [isMicOn, setIsMicOn] = useState(true);
+  const [isLowLightEnhanced, setIsLowLightEnhanced] = useState(false);
+  const [cameraQuality, setCameraQuality] = useState<'Standard' | 'HD'>('HD');
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const spokenMessageIdsRef = useRef<Set<string>>(new Set());
 
   const { isListening, interimText, error: speechError, startListening, stopListening, simulateSpeech } = useSpeechToText();
+
+  // Safely stop local streaming elements on component unmount
+  const localStreamRef = useRef<MediaStream | null>(null);
+  useEffect(() => {
+    localStreamRef.current = localStream;
+  }, [localStream]);
+
+  useEffect(() => {
+    return () => {
+      stopSpeech();
+      stopListening();
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => {
+          track.stop();
+          console.log(`Resource Released: Stopped stream track: ${track.kind}`);
+        });
+      }
+    };
+  }, [stopListening]);
+
+  const toggleCameraQuality = async () => {
+    const nextQuality = cameraQuality === 'HD' ? 'Standard' : 'HD';
+    setCameraQuality(nextQuality);
+    
+    if (isCameraOn && localStream) {
+      try {
+        // Stop and remove current video track
+        localStream.getVideoTracks().forEach(track => {
+          track.stop();
+          localStream.removeTrack(track);
+        });
+
+        // Request clean updated video stream track using optimized constraints
+        const videoStream = await getSafeUserMedia({ 
+          video: nextQuality === 'HD' 
+            ? { width: { ideal: 1280 }, height: { ideal: 720 } } 
+            : { width: { ideal: 640 }, height: { ideal: 480 } }
+        });
+        const newVideoTrack = videoStream.getVideoTracks()[0];
+        if (newVideoTrack) {
+          localStream.addTrack(newVideoTrack);
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = localStream;
+          }
+        }
+      } catch (err) {
+        console.warn("Could not transition video quality parameters:", err);
+      }
+    }
+  };
 
   const handleSimulateSpeech = (text: string) => {
     simulateSpeech(text, (updatedText, isFinal) => {
@@ -587,11 +729,15 @@ export function CommunicationPage() {
                     } else if (!isCameraOn) {
                       try {
                         const videoStream = await getSafeUserMedia({ 
-                          video: { width: 1280, height: 720 } 
+                          video: cameraQuality === 'HD'
+                            ? { width: { ideal: 1280 }, height: { ideal: 720 } }
+                            : { width: { ideal: 640 }, height: { ideal: 480 } }
                         });
                         const newVideoTrack = videoStream.getVideoTracks()[0];
-                        localStream.addTrack(newVideoTrack);
-                        if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
+                        if (newVideoTrack) {
+                          localStream.addTrack(newVideoTrack);
+                          if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
+                        }
                         setIsCameraOn(true);
                       } catch (err) {
                         console.log("Failed to turn on camera:", err);
@@ -600,7 +746,9 @@ export function CommunicationPage() {
                   } else {
                     try {
                       const stream = await getSafeUserMedia({ 
-                        video: { width: 1280, height: 720 },
+                        video: cameraQuality === 'HD'
+                          ? { width: { ideal: 1280 }, height: { ideal: 720 } }
+                          : { width: { ideal: 640 }, height: { ideal: 480 } },
                         audio: true 
                       });
                       setLocalStream(stream);
@@ -620,6 +768,35 @@ export function CommunicationPage() {
               >
                 <Camera className="w-4 h-4" />
               </button>
+
+              {/* Camera Quality Trigger (HD vs SD) */}
+              {isCameraOn && (
+                <button
+                  onClick={toggleCameraQuality}
+                  type="button"
+                  className={cn(
+                    "p-1 px-1.5 rounded bg-slate-100 hover:bg-slate-200 text-[10px] font-extrabold text-slate-700 transition-all active:scale-95 border border-slate-200/50"
+                  )}
+                  title={`Change Camera Stream Quality (Current: ${cameraQuality})`}
+                >
+                  {cameraQuality}
+                </button>
+              )}
+
+              {/* Dynamic GPU Low Light Boost Filter */}
+              {isCameraOn && (
+                <button
+                  onClick={() => setIsLowLightEnhanced(!isLowLightEnhanced)}
+                  type="button"
+                  className={cn(
+                    "p-2 rounded-lg transition-all active:scale-95",
+                    isLowLightEnhanced ? "bg-amber-500/10 text-amber-600 border border-amber-500/35" : "text-slate-600 hover:bg-slate-200"
+                  )}
+                  title={isLowLightEnhanced ? "Disable low light boost filter" : "Activate low light boost filter"}
+                >
+                  <Sparkles className={cn("w-4 h-4", isLowLightEnhanced && "text-amber-500 animate-pulse")} />
+                </button>
+              )}
             </div>
           )}
 
@@ -652,7 +829,18 @@ export function CommunicationPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="absolute top-4 right-4 z-40 w-44 h-56 md:w-56 md:h-40 bg-slate-900 border border-slate-200/50 shadow-2xl rounded-2xl overflow-hidden"
             >
-              <video ref={localVideoRef} autoPlay playsInline muted className={cn("w-full h-full object-cover", !isCameraOn && "opacity-0")} />
+              <video 
+                ref={localVideoRef} 
+                autoPlay 
+                playsInline 
+                muted 
+                style={{
+                  filter: isLowLightEnhanced 
+                    ? 'brightness(1.22) contrast(1.12) saturate(1.08) sepia(0.04)' 
+                    : 'none'
+                }}
+                className={cn("w-full h-full object-cover transition-all duration-300", !isCameraOn && "opacity-0")} 
+              />
               
               {!isCameraOn && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 p-4">

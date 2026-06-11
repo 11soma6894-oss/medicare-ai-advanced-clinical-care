@@ -4,7 +4,7 @@
  */
 
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Home, History, CreditCard, User, LogOut, Activity, ShieldCheck, Menu, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -13,6 +13,9 @@ interface User {
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
+  role?: string;
+  activePlan?: string | null;
+  websiteName?: string | null;
 }
 
 interface LayoutProps {
@@ -39,6 +42,10 @@ export function Layout({ user, onLogout }: LayoutProps) {
     navigate('/');
   };
 
+  useEffect(() => {
+    document.title = (user?.websiteName || 'Medicare AI') + " | Professional Doctor Consultations";
+  }, [user?.websiteName]);
+
   return (
     <div className="min-h-screen flex flex-col bg-brand-blue text-black font-sans selection:bg-blue-200">
       <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-md border-b border-sky-100/50 px-4 md:px-6 h-14 md:h-16">
@@ -47,7 +54,7 @@ export function Layout({ user, onLogout }: LayoutProps) {
             <div className="bg-primary-blue p-1.5 md:p-2 rounded-lg group-hover:scale-110 transition-transform shadow-lg shadow-blue-200">
               <Activity className="w-5 h-5 md:w-6 md:h-6 text-white" />
             </div>
-            <span className="text-lg md:text-xl font-bold tracking-tight">Medicare AI</span>
+            <span className="text-lg md:text-xl font-bold tracking-tight">{user?.websiteName || 'Medicare AI'}</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-8 font-medium">
@@ -166,7 +173,7 @@ export function Layout({ user, onLogout }: LayoutProps) {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Activity className="w-6 h-6 text-sky-600" />
-              <span className="text-lg font-bold">Medicare AI</span>
+              <span className="text-lg font-bold">{user?.websiteName || 'Medicare AI'}</span>
             </div>
             <p className="text-sm text-gray-500 max-w-xs">
               Smart healthcare platform connecting you with professional doctors instantly using AI.
@@ -192,7 +199,7 @@ export function Layout({ user, onLogout }: LayoutProps) {
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-sky-50 text-center text-xs text-gray-400">
-          © 2026 Medicare AI. All rights reserved.
+          © 2026 {user?.websiteName || 'Medicare AI'}. All rights reserved.
         </div>
       </footer>
     </div>

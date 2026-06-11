@@ -13,7 +13,7 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 
 export function ProfilePage() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, updateWebsiteName } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -25,6 +25,7 @@ export function ProfilePage() {
   const [editBloodType, setEditBloodType] = useState('');
   const [editWeight, setEditWeight] = useState('');
   const [editHeight, setEditHeight] = useState('');
+  const [editWebsiteName, setEditWebsiteName] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -64,6 +65,7 @@ export function ProfilePage() {
       setEditBloodType(profile.bloodType || '');
       setEditWeight(profile.weight || '');
       setEditHeight(profile.height || '');
+      setEditWebsiteName(profile.websiteName || authUser?.websiteName || 'Medicare AI');
     }
   }, [profile, authUser]);
 
@@ -81,6 +83,7 @@ export function ProfilePage() {
         bloodType: editBloodType,
         weight: editWeight,
         height: editHeight,
+        websiteName: editWebsiteName,
       }).catch(e => {
         handleFirestoreError(e, OperationType.UPDATE, `users/${authUser.uid}`);
         throw e;
@@ -93,7 +96,8 @@ export function ProfilePage() {
         phone: editPhone,
         bloodType: editBloodType,
         weight: editWeight,
-        height: editHeight
+        height: editHeight,
+        websiteName: editWebsiteName,
       }));
 
       // Sync demo user in localStorage
@@ -108,6 +112,8 @@ export function ProfilePage() {
           console.warn("Storage sync skipped: ", err);
         }
       }
+
+      updateWebsiteName(editWebsiteName);
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -180,6 +186,7 @@ export function ProfilePage() {
     bloodType: profile?.bloodType || 'Not set',
     weight: profile?.weight || 'Not set',
     height: profile?.height || 'Not set',
+    websiteName: profile?.websiteName || authUser.websiteName || 'Medicare AI',
   };
 
   return (
@@ -262,7 +269,7 @@ export function ProfilePage() {
                 { icon: Heart, label: 'Blood Group', value: userData.bloodType, color: 'text-red-400' },
                 { icon: Activity, label: 'Weight', value: userData.weight, color: 'text-sky-400' },
                 { icon: Activity, label: 'Height', value: userData.height, color: 'text-emerald-400' },
-                { icon: Shield, label: 'Status', value: profile?.activePlan || authUser?.activePlan ? 'Verified' : 'Active', color: 'text-amber-400' },
+                { icon: Shield, label: 'Portal Name', value: userData.websiteName, color: 'text-amber-400' },
               ].map((item, i) => (
                 <div key={i} className="bg-white/5 border border-white/10 p-4 rounded-xl backdrop-blur-xs hover:bg-white/10 transition-colors">
                   <div className="flex items-center gap-2 mb-2">
@@ -290,7 +297,7 @@ export function ProfilePage() {
             </div>
 
             <form onSubmit={handleSaveProfile} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Full Name */}
                 <div className="space-y-1.5">
                   <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block ml-1">
@@ -315,6 +322,20 @@ export function ProfilePage() {
                     value={editPhone}
                     onChange={(e) => setEditPhone(e.target.value)}
                     placeholder="Enter phone number"
+                    className="w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 focus:border-primary-blue focus:ring-4 focus:ring-primary-blue/5 outline-none font-bold text-xs px-4 py-3 rounded-xl transition-all"
+                  />
+                </div>
+
+                {/* Website name branding */}
+                <div className="space-y-1.5">
+                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 block ml-1">
+                    Website Name Branding
+                  </label>
+                  <input
+                    type="text"
+                    value={editWebsiteName}
+                    onChange={(e) => setEditWebsiteName(e.target.value)}
+                    placeholder="e.g. Medicare AI"
                     className="w-full bg-slate-50/50 border border-slate-200 hover:border-slate-300 focus:border-primary-blue focus:ring-4 focus:ring-primary-blue/5 outline-none font-bold text-xs px-4 py-3 rounded-xl transition-all"
                   />
                 </div>
